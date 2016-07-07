@@ -11,6 +11,7 @@
 ## Icinga là gì?
 - Icinga là 1 hệ thống giám sát check hosts và các services mà bạn chỉ định hoặc thông báo cho bạn khi có lỗi gì đó và khi chúng được phục hồi.
 - Nó có thể chạy trên nhiều Linux distributions (bao gồm Fedora, Ubuntu, openSUSE) cũng như các Unix platforms khác (bao gồm Solaris và HP).
+- Được viết bằng C.
 - Hệ thống có thể giám sát bất kì cái gì có kết nối mạng.
 - Các đặc trưng của Icinga gồm:
 <ul>
