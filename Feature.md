@@ -1,17 +1,13 @@
 # Icinga2 Features
 <img src="http://image.prntscr.com/image/f9a170537a8848cd831174eeaa83d1fd.png" >
 
-- Các feature nằm trong đường dẫn `etc/icinga2/feature-available`.
-
 ## 1. Logging
 - Support 3 kiểu log # nhau:File logging, Syslog  (OS Unix), Console logging, (STDOUT on tty).
-
-Feature	| Description |
----  | --- |
-debuglog | Debug log (path: /var/log/icinga2/debug.log, severity: debug or higher) |	
-mainlog	| Main log (path: var/log/icinga2/mainlog, severity: information or higher) |
-syslog | Syslog (severity: warning or higher) |
-
+|	Feature		|	Description |
+| ------------  | ------------- |
+|	debuglog	| 	Debug log (path: /var/log/icinga2/debug.log, severity: debug or higher) |	
+|	mainlog		|	Main log (path: var/log/icinga2/mainlog, severity: information or higher) |
+|	syslog		|	Syslog (severity: warning or higher) |
 - Mặc định thằng mainlog được enable.khi severity "information" hoặc higher -> console.
 
 ## 2. DB IDO
@@ -33,11 +29,46 @@ syslog | Syslog (severity: warning or higher) |
 - Feature PerfdataWriter cho phép qui định format của template output cho các host + service
 - Command:	`icinga2 feature enable perfdata`
 - Path: /var/spool/icinga2/perfdata/
+- 
 
 ### 4.2 Graphite Carbon Cache Writer
 - Khi thằng graphios dành cho icinga 1.x thì để phát triển hơn, Graphite deamon tcp socket được tạo ra cho icinga2.
 - Command:	`icinga2 feature enable graphite`
 - Listen at 127.0.0.1 và port 2003
+
+#### 4.2.1 Current Graphite Schema
+- Giá trị metric được lưu lại như sau: <prefix>.perfdata.<perfdata-label>.value
+- Lưu ý rằng "perfdata labels" có thể chứa "." cho phép add thêm các cấp độ tiếp theo trong cây Graphite.
+- Khi enable "enable_send_thresholds " icinga2 sẽ tự động add các ngưỡng metric như sau:
+	<ul>
+		<li><prefix>.perfdata.<perfdata-label>.min</li>
+		<li><prefix>.perfdata.<perfdata-label>.max</li>
+		<li><prefix>.perfdata.<perfdata-label>.warn</li>
+		<li><prefix>.perfdata.<perfdata-label>.crit</li>
+	</ul>
+- Khi enable "enable_send_metadata " icinga2 sẽ tự động add các metric metadata:
+	<ul>
+		<li><prefix>.metadata.current_attempt</li>
+		<li><prefix>.metadata.downtime_depth</li>
+		<li><prefix>.metadata.execution_time</li>
+		<li><prefix>.metadata.latency</li>
+		<li><prefix>.metadata.max_check_attempts</li>
+		<li><prefix>.metadata.reachable</li>
+		<li><prefix>.metadata.state</li>
+		<li><prefix>.metadata.state_type</li>
+	</ul>
+- Metadata metric overview
+
+METRIC | DESCRIPTION |
+--- | --- |
+current_attempt | thử kiểm tra hiện tại |
+max_check_attempts | số lần tối đa kiểm tra cho đến khi đạt đến hard state |
+reachable | kiêm tra đối tượng được cho phép |
+downtime_depth | số lần downtime của object này |
+execution_time | thời gian thực thi kiểm tra |
+latency | độ trễ kiểm tra |
+state | trạng thái hiện tại của object được kiểm tra |
+state_type | 0=SOFT, 1=HARD state |
 
 ### 4.3 GELF Writer
 - Gửi các log của ứng dụng trực tiếp tới TCP socket.
@@ -50,6 +81,11 @@ syslog | Syslog (severity: warning or higher) |
 - Thằng icinga1.x có tcollector thì TSDB tcp socket -> icinga2
 - Command:	`icinga2 feature enable opentsdb`
 - Listen at 127.0.0.1 and port 4242
+- Mẫu schema:
+```sh
+icinga.host.<metricname>
+icinga.service.<servicename>.<metricname>
+```
 
 ## 5. Livestatus
 - MK Livestatus thực hiện các phương thức truy vấn cho users truy vấn về thông tin trạng thái.Nó cũng có thể được dùng để gửi command.
@@ -73,15 +109,15 @@ syslog | Syslog (severity: warning or higher) |
 
 ### 5.4 Livestatus Filters
 - Bộ lọc sử dụng các toán tử: And, or, negate.
+| Operator | Negate | Description |
+| -------  | ------ | ----------- |
+| =	| != | Equality |
+| ~ | !~ | Regex Match |
+| < | -- | 	Less than |
+| > | -- | 	Greater than |
+| <= | -- | Less than or equal |
+| >= | -- | Greater than or equal |
 
-Operator | Negate | Description |
----  | --- | --- |
-= | != | Equality |
-~ | !~ | Regex Match |
-< | -- | Less than |
-> | -- | Greater than |
-<= | -- | Less than or equal |
->= | -- | Greater than or equal |
 
 ### 5.5 Livestatus Stats
 - Schema: "Stats: aggregatefunction aggregateattribute"
