@@ -33,7 +33,6 @@ syslog | Syslog (severity: warning or higher) |
 - Feature PerfdataWriter cho phép qui định format của template output cho các host + service
 - Command:	`icinga2 feature enable perfdata`
 - Path: /var/spool/icinga2/perfdata/
-- 
 
 ### 4.2 Graphite Carbon Cache Writer
 - Khi thằng graphios dành cho icinga 1.x thì để phát triển hơn, Graphite deamon tcp socket được tạo ra cho icinga2.
