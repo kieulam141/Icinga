@@ -5,11 +5,13 @@
 
 ## 1. Logging
 - Support 3 kiểu log # nhau:File logging, Syslog  (OS Unix), Console logging, (STDOUT on tty).
-|	Feature		|	Description |
-| ------------  | ------------- |
-|	debuglog	| 	Debug log (path: /var/log/icinga2/debug.log, severity: debug or higher) |	
-|	mainlog		|	Main log (path: var/log/icinga2/mainlog, severity: information or higher) |
-|	syslog		|	Syslog (severity: warning or higher) |
+
+Feature	| Description |
+---  | --- |
+debuglog | Debug log (path: /var/log/icinga2/debug.log, severity: debug or higher) |	
+mainlog	| Main log (path: var/log/icinga2/mainlog, severity: information or higher) |
+syslog | Syslog (severity: warning or higher) |
+
 - Mặc định thằng mainlog được enable.khi severity "information" hoặc higher -> console.
 
 ## 2. DB IDO
@@ -72,15 +74,15 @@
 
 ### 5.4 Livestatus Filters
 - Bộ lọc sử dụng các toán tử: And, or, negate.
-| Operator | Negate | Description |
-| -------  | ------ | ----------- |
-| =	| != | Equality |
-| ~ | !~ | Regex Match |
-| < | -- | 	Less than |
-| > | -- | 	Greater than |
-| <= | -- | Less than or equal |
-| >= | -- | Greater than or equal |
 
+Operator | Negate | Description |
+---  | --- | --- |
+= | != | Equality |
+~ | !~ | Regex Match |
+< | -- | Less than |
+> | -- | Greater than |
+<= | -- | Less than or equal |
+>= | -- | Greater than or equal |
 
 ### 5.5 Livestatus Stats
 - Schema: "Stats: aggregatefunction aggregateattribute"
