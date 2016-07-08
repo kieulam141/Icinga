@@ -15,6 +15,10 @@
 - Thằng này có thêm các tính năng mới.
 - Quản lý các giám sát tác vụ, running checks, gửi thông báo về cảnh báo.
 - Có các feature mặc định như "checker", "notification".Các feature có thể được enable theo yêu cầu.
+- Tích hợp được với các phần mềm ghi log như logstash, graylog ...
+- HỖ trợ hầu hết các distribution chính.
+- CLI mạnh mẽ.
+- Bao gồm các thư viện mẫu sâu rộng.
 - Giao diện bên ngoài tương thích với Icinga1.x và chính giao diện người dùng của nó.
 - Được xây dựng trên cluster stack bảo mật bởi chứng chỉ SSL x509 giúp cho việc cài đặt các giám sát phân phối dễ hơn.
 - Cú pháp cấu hình cũng # so với Icinga1.x và Nagios/
