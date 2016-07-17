@@ -72,10 +72,12 @@ systemctl restart httpd
 ```
 - Sau đó bạn truy cập vào đường dẫn *http://ktlam.com/icingaweb2/setup* để tiến hành setup token và cấu hình icingaweb2.
 - Setup token:
+```sh
 groupadd -r icingaweb2;
 usermod -a -G icingaweb2 apache;
 icingacli setup config directory --group icingaweb2;
 icingacli setup token create;
+```
 - Sau khi có được token bạn nhập vào ô và ấn next để tiếp tục
 <img src="http://image.prntscr.com/image/fc4594b6bc144ed995449bf8a6d2bcbe.png" />
 
