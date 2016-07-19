@@ -16,14 +16,21 @@
 - Switch cần monitor
 <ul>
 	<li>Model: Cisco 3550</li>
-	<li>Ip:192.168.100.220</li>
+	<li>Ip: 192.168.100.220</li>
 	<li>Interface: FastEthernet0/1-24</li>
 </ul>
 
 <a name="2"></a>
 ### 2.Cài đặt snmp-plugins
-- yum -y install net-snmp net-snmp-utils net-snmp-perl perl-CPAN
-- perl -MCPAN -e shell -> enter mặc định -> cpan> install Net::SNMP
+- Cài đặt các gói cần thiết:
+```sh
+yum -y install net-snmp net-snmp-utils net-snmp-perl perl-CPAN
+```
+- Chạy perl để install Net::SNMP:
+```sh
+perl -MCPAN -e shell // enter mặc định
+cpan> install Net::SNMP
+```
 - Tải nagios-snmp-plugins về:
 ```sh
 wget http://nagios.manubulon.com/nagios-snmp-plugins.1.1.1.tgz
@@ -33,13 +40,13 @@ wget http://nagios.manubulon.com/nagios-snmp-plugins.1.1.1.tgz
 tar -xzvf nagios-snmp-plugins.1.1.1.tgz
 ```
 - Vào thư mục đã giải nén ra chạy file : ./install.sh.
-- Khi được hỏi install các file để chạy snmp, bạn có thể tùy chọn đường dẫn.Tôi sẽ để chung với các plugins trước đấy: /usr/lib64/nagios/plugins
+- Khi được hỏi install các file plugin ".pl" để chạy snmp, bạn có thể tùy chọn đường dẫn.Tôi sẽ để chung với các plugins trước đấy: /usr/lib64/nagios/plugins
 
 <a name="3"></a>
 ### 3.Cấu hình monitor SNMP
 - Trước khi cấu hình monitor SNMP, set các view table cho các đối tượng cần monitor ở trong file /etc/snmp/snmpd.conf.
 - Link về các view table: http://nagios.manubulon.com/index_info.html
-- Bắt đầu thêm host,service và command để monitor switch, có thể khai báo các hàm vào các file host.conf, service.conf, command.conf có sẵn ở đường dẫn /etc/icinga2/conf.d. Nhưng để dễ quản lí và fix lỗi, tôi sẽ tạo riêng 1 file config Switch1.conf tại đường dẫn :/etc/icinga2/repository.d/hosts/Switch.Chú ý thư mục Switch là do tôi tự tạo ra.
+- Bắt đầu thêm host,service và command để monitor switch, có thể khai báo các hàm vào các file host.conf, service.conf, command.conf có sẵn ở đường dẫn /etc/icinga2/conf.d. Nhưng để dễ quản lí và fix lỗi, tôi sẽ tạo riêng 1 file config Switch1.conf tại đường dẫn :/etc/icinga2/repository.d/hosts/Switch.
 - Khai báo host:
 ```sh
 object host Switch {
@@ -56,6 +63,7 @@ object host Switch {
 	// Chỉ ra address cho 1 số service cần gọi đến.
 	vars.address = "192.168.100.220"
 }
+```
 
 ### a.Check-Load
 - Bạn có thể vào đường dẫn /usr/lib64/nagios/plugins và chạy file *./check_snmp_load.pl -h* để xem các tham số cần có.
@@ -63,7 +71,7 @@ object host Switch {
 - Trước khi chạy plugins với icinga2, bạn có thể chạy plugins riêng với câu lệnh:
 ```sh
 ./check_snmp_load.pl -H 192.168.100.220 -C public -2 -T cisco -w 3,2,1 -c 3,3,2 -f
-```
+
 - Khai báo service vào tiếp trong file Switch.conf
 ```sh
 object Service "snmp-load" {
