@@ -73,9 +73,9 @@ object host Switch {
 - Trước khi chạy plugins với icinga2, bạn có thể chạy plugins riêng với câu lệnh:
 ```sh
 ./check_snmp_load.pl -H 192.168.100.220 -C public -2 -T cisco -w 3,2,1 -c 3,3,2 -f
-```sh
+```
 
-- Khai báo service vào tiếp trong file Service.conf
+- Khai báo service vào trong file Service.conf
 ```sh
 object Service "snmp-load" {
     host_name           = "Switch"
