@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# Make sure that this points to snmpbulkwalk. snmpwalk works too, but snmpbulkwalk is better.
+snmpwalk="/usr/bin/snmpbulkwalk"
+tempdir="/opt/monitor/var/DiscoveryPortSwitch"
+all_port="$tempdir/data/$1"
+if [ ! -f "$all_port" ]; then
+  touch "$all_port"
+  if [ $? != 0 ]; then
+    echo "Something went wrong when creating "$all_port"!"
+    exit 3
+  fi
+fi
+# This timestamp is used throughout the scrpit.
+if [ $# == 2 ]; then
+  snmpopt="-v 2c -c $2 $1 -O n"
+fi
+
+if [ $# != 2 ]; then
+	echo "Wrong amount of arguments!"
+	echo
+	echo "Usage:"
+	echo "SNMPv2c: ./discoverSwitchPort HOSTNAME community"
+	privpass
+	exit 3
+fi
+$snmpwalk $snmpopt 1.3.6.1.2.1.2.2.1.2 >> "$all_port"
+
