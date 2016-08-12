@@ -1,0 +1,210 @@
+#!/bin/sh
+# Auto add Switch port to host config file base on IP address. Per Switch = 1 function. # Can't Insert more parameters in one Switch function.
+# You just can delete the function and create new.
+ScriptPath="/opt/monitor/var/DiscoveryPortSwitch"
+DataPath="/opt/monitor/var/DiscoveryPortSwitch/data"	# Include all datas about all port switch after discovering
+Data=$(ls $DataPath)
+read -p "Pls Enter The IP of Switch, u want to monitor: " address
+read -p "Pls Enter The Path of Config file, u want to add: " Configfile
+for i in $Data
+do
+	if [ $i == $address ]; then
+		file="$DataPath/$i"
+	else
+		echo "Error.The IP is not valid.Go to the "$ScriptPath" to run script discovery port of switch "
+		exit
+	fi
+	
+done
+StartWrite() { 					# Start to write parameters in file host config
+cat >> $Configfile<<EOF
+object Host "Switch-$address" {
+    import "generic-host"
+    address = "$address"
+EOF
+}
+# Write parameters about monitor interfaces
+# There are some interfaces which need to monitor include: FastEthernet, GigabitEthernet, Portchanel, TenGigabitEthernet
+
+AddFastPort() {
+# Filter Type of FastEthernet port such as: FastEthernet1, FastEthernet2
+BigTypeFast=$(cat $file | awk '{print $4}' | tr "/" " " | awk '{print $1}' | grep -e '^Fast*' | awk '!a[$0]++' )
+
+for i in $BigTypeFast
+do
+# Count Slot of number type port such as: FastEthernet1/1 = 2; FastEthernet1/1/0 = 3;
+	CountSlot=$(cat $file | grep "$i" | awk '{print $4}' | tr "/" " " | head -n 1 | awk '{print NF}' )
+	# Count Slot = 2
+	case $CountSlot in 
+	2 )
+		BeginSlot2=$(cat $file | grep -e "^$i*" | awk '{print $4}' | tr "/" " " | head -n 1 | awk '{print $2}')
+		EndSlot2=$(expr $(cat $file |  awk '{print $4}' | grep "^$i" | wc -l ) + $BeginSlot2)
+	cat >> $Configfile <<EOF
+	var num=$BeginSlot2
+	while (num < "$EndSlot2") {
+		vars.int["$i" + "/" + String(num)] = {
+				int = "$i" + "/" + String(num)
+		}
+		num += 1
+	}
+EOF
+;;
+	# Count Slot = 3 Using 2 time of while loops
+3 )
+		BeginSlot2=$(cat $file | grep -e "$i" | awk '{print $4}' | tr "/" " " | head -n 1 | awk '{print $2}')
+		EndSlot2=$(cat $file | grep -e "$i" | awk '{print $4}' | tr "/" " " | awk '{print $2}' | awk '!a[$0]++' | wc -l)
+		num=$BeginSlot2		
+		# While do for Slot2
+		while [ $num -lt $EndSlot2 ] 
+		do
+		New=$i/$num			# such as FastEthernet1/1
+		BeginSlot3=$(cat $file | grep "$New" | awk '{print $4}' | tr "/" " " | head -n 1 | awk '{print $3}')
+		EndSlot3=$(cat $file | grep "$New" | awk '{print $4}' | wc -l )
+	
+		cat >> $Configfile <<EOF
+			var num=$BeginSlot3
+			while (num <= $EndSlot3) {
+			vars.int["$New" + "/" + String(num)] = {
+					int = "$New" + "/" + String(num)
+			}
+			num += 1
+			}	
+EOF
+		num=$(expr $num + 1)
+		done
+	esac
+done
+}
+
+AddGigaPort() {
+BigTypeGiga=$(cat $file | awk '{print $4}' | tr "/" " " | awk '{print $1}' | grep -e '^Giga*' | awk '!a[$0]++' )
+
+for i in $BigTypeGiga
+do
+	CountSlot=$(cat $file | grep "$i" | awk '{print $4}' | tr "/" " " | head -n 1 | awk '{print NF}' )
+	# Count Slot = 2
+	case $CountSlot in 
+	2 )
+		BeginSlot2=$(cat $file | grep "$i" | awk '{print $4}' | tr "/" " " | head -n 1 | awk '{print $2}')
+		EndSlot2=$(expr $(cat $file |  awk '{print $4}' | grep "^$i" | wc -l ) + $BeginSlot2)
+	cat >> $Configfile <<EOF
+	var num=$BeginSlot2
+	while (num < "$EndSlot2") {
+		vars.int["$i" + "/" + String(num)] = {
+				int = "$i" + "/" + String(num)
+		}
+		num += 1
+	}
+EOF
+;;
+	# Count Slot = 2 such as G1/0/0 G1/1/0
+3 )
+		BeginSlot2=$(cat $file | grep "$i" | awk '{print $4}' | tr "/" " " | head -n 1 | awk '{print $2}')
+		EndSlot2=$(cat $file | grep "$i" | awk '{print $4}' | tr "/" " " | awk '{print $2}' | awk '!a[$0]++' | wc -l)
+		num=$BeginSlot2
+		# While do for Slot2
+		while [ $num -lt $EndSlot2 ] 
+		do
+		New=$i/$num
+		BeginSlot3=$(cat $file | grep "$New" | awk '{print $4}' | tr "/" " " | head -n 1 | awk '{print $3}')
+		EndSlot3=$(cat $file | grep "$New" | awk '{print $4}' | wc -l )
+	
+		cat >> $Configfile <<EOF
+			var num=$BeginSlot3
+			while (num <= $EndSlot3) {
+			vars.int["$New" + "/" + String(num)] = {
+					int = "$New" + "/" + String(num)
+			}
+			num += 1
+			}	
+EOF
+		num=$(expr $num + 1)
+		done
+	esac
+done
+}
+
+AddTenGigaPort() {
+BigTypeTenGiga=$(cat $file | awk '{print $4}' | tr "/" " " | awk '{print $1}' | grep -e '^TenGiga*' | awk '!a[$0]++' )
+
+for i in $BigTypeTenGiga
+do
+	CountSlot=$(cat $file | grep "$i" | awk '{print $4}' | tr "/" " " | head -n 1 | awk '{print NF}' )
+	# Count Slot = 2 such as G1/0 G2/0
+	case $CountSlot in 
+	2 )
+		BeginSlot2=$(cat $file | grep "$i" | awk '{print $4}' | tr "/" " " | head -n 1 | awk '{print $2}')
+		EndSlot2=$(expr $(cat $file |  awk '{print $4}' | grep "^$i" | wc -l ) + $BeginSlot2)
+		num=$(expr $num + 1)
+	cat >> $Configfile <<EOF
+	var num=$BeginSlot2
+	while (num < "$EndSlot2") {
+		vars.int["$i" + "/" + String(num)] = {
+				int = "$i" + "/" + String(num)
+		}
+		num += 1
+	}
+EOF
+;;
+	# Count Slot = 2 such as G1/0/0 G1/1/0
+3 )
+		BeginSlot2=$(cat $file | grep "$i" | awk '{print $4}' | tr "/" " " | head -n 1 | awk '{print $2}')
+		EndSlot2=$(cat $file | grep "$i" | awk '{print $4}' | tr "/" " " | awk '{print $2}' | awk '!a[$0]++' | wc -l)
+		num=$BeginSlot2
+		# While do for Slot2
+		while [ $num -lt $EndSlot2 ] 
+		do
+		New=$i/$num
+		BeginSlot3=$(cat $file | grep "$New" | awk '{print $4}' | tr "/" " " | head -n 1 | awk '{print $3}')
+		EndSlot3=$(cat $file | grep "$New" | awk '{print $4}' | wc -l )
+	
+		cat >> $Configfile <<EOF
+			var num=$BeginSlot3
+			while (num <= $EndSlot3) {
+			vars.int["$New" + "/" + String(num)] = {
+					int = "$New" + "/" + String(num)
+			}
+			num += 1
+			}	
+EOF
+		num=$(expr $num + 1)
+		done
+	esac
+done
+}
+
+AddChannelPort() {
+	NumOfPort=$(cat $file | awk '{print $4}' | grep -e '^Port*' | tr "l" " " | awk '{print$2}')
+	NamePort=$(cat $file | awk '{print $4}' | grep -e '^Port*' | tr "l" " " | awk '{print$1}' | awk '!a[$0]++' )
+	# I will get structure: var Num1 = ["a","b","c"...]
+	Num=[
+	for i in $NumOfPort
+	do
+		Num=$Num\""$i\"",		# Num = ["a","b","c,
+	done
+	Num=${Num%,*}				# delete the last "," => Num = ["a","b","c"
+	Num=$Num]					# full structure
+	cat >> $Configfile<<EOF
+	var Num1 = $Num
+	for (num in Num1) {
+		vars.int["$NamePort" + "l" + String(num)] = {
+		int = "$NamePort" + "l" + String(num)
+		}
+	}
+EOF
+}
+
+EndWrite() {					# End the config host file
+cat >> $Configfile<<EOF
+}
+EOF
+}
+main(){
+	StartWrite
+	AddFastPort
+	AddGigaPort
+	AddTenGigaPort
+	AddChannelPort
+	EndWrite
+}
+main
